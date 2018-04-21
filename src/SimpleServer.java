@@ -24,7 +24,7 @@ public class SimpleServer {
 		System.out.println(0);
 	}
 	public ArrayList<ServerConnection> clientList() {
-		return null;
+		return this.connectionsList;
 	}
 	public void startServer() {
 		try {
