@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.*;
 
 public class SimpleServer {
 
@@ -12,13 +13,18 @@ public class SimpleServer {
 	Socket clientSocket = null;
 	int numConnections = 0;
 	int port;
+	ArrayList<ServerConnection> connectionsList;
 
 	public SimpleServer(int port) {
 		this.port = port;
+		this.connectionsList = new ArrayList<ServerConnection>();
 	}
 	public void stopServer() {
 		System.out.println("Server closing");
 		System.out.println(0);
+	}
+	public ArrayList<ServerConnection> clientList() {
+		return null;
 	}
 	public void startServer() {
 		try {
@@ -27,24 +33,65 @@ public class SimpleServer {
 			e.printStackTrace();
 		}
 		System.out.println("Server started");
-		try {
-			clientSocket = server.accept();
-			numConnections = 1;
-			BufferedReader is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			String line;
-			while (true) {
-				line = is.readLine();
-				System.out.println(line);
-				if(line.equals("exit")) {
-					break;
-				}
+		while (true) {
+			try {
+				clientSocket = server.accept();
+				numConnections++;
+				ServerConnection oneconnection = new ServerConnection(clientSocket,this);
+				connectionsList.add(oneconnection);
+				new Thread(oneconnection).start();
+//				BufferedReader is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+//				String line;
+//				while (true) {
+//					line = is.readLine();
+//					System.out.println(line);
+//					if(line.equals("exit")) {
+//						break;
+//					}
+//				}
+//				System.out.println("Connection closed");
+//				is.close();
+//				clientSocket.close();
+//				stopServer();
+			}catch(Exception e){
+				e.printStackTrace();
 			}
-			System.out.println("Connection closed");
-			is.close();
-			clientSocket.close();
-			stopServer();
-		}catch(Exception e){
+		}
+	}
+}
+class ServerConnection implements Runnable {
+	BufferedReader is;
+	Socket clientSocket;
+	SimpleServer server;
+	PrintStream os;
+
+	public ServerConnection(Socket clientSocket, SimpleServer server) {
+		this.clientSocket = clientSocket;
+		this.server = server;
+		try {
+			is = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			os = new PrintStream(clientSocket.getOutputStream());
+		}catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
+
+	@Override
+	public void run() {
+		String line;
+		try {
+			while (true) {
+				line = is.readLine();
+				for(ServerConnection sc : server.clientList()) {
+					if(sc!=this) {
+						//TODO Write
+						sc.os.println(line);
+					}
+				}
+			}
+		}catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }
