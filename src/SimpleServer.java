@@ -5,6 +5,7 @@ import java.util.*;
 public class SimpleServer {
 
 	public static void main(String args[]) {
+
 		int port = 6789;
 		SimpleServer server = new SimpleServer(port);
 		server.startServer();
@@ -82,6 +83,7 @@ class ServerConnection implements Runnable {
 		try {
 			while (true) {
 				line = is.readLine();
+				System.out.println(line);
 				for(ServerConnection sc : server.clientList()) {
 					if(sc!=this) {
 						//TODO Write
